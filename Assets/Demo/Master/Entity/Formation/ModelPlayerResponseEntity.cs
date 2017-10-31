@@ -30,7 +30,7 @@ public class ModelPlayerResponseEntity : IResponsePacket
 	/// <summary>
 	/// 打順コード
 	/// </summary>
-	public int BattingOrderCode { get; private set; }
+	public eBattingOrderCode BattingOrderCode { get; private set; }
 
 	/// <summary>
 	/// 選手ナレッジID
@@ -40,7 +40,7 @@ public class ModelPlayerResponseEntity : IResponsePacket
 
 	public void OnAfterDeserialize(ApiResponseMeta header)
 	{
-		BattingOrderCode	= (int)battingOrder;
+		BattingOrderCode	= (eBattingOrderCode)battingOrder;
 		PlayerKnowledgeId	= playerKnowledgeId;
 	}
 }

@@ -19,8 +19,9 @@ For details on how to use MsgPack-Cli, please see [here](https://github.com/msgp
     * Analyze MessagePack binary to readable format.
     * Save and load MessagePack binary.
     * Convert json to MessagePack automatically. default is `Off`.
-    * Displays a parse error.
     * ![image](https://user-images.githubusercontent.com/12690315/32087322-014220f0-bb16-11e7-806e-1f59ae07677e.png)
+    * Displays a parse error as following.  
+    ![image](https://user-images.githubusercontent.com/12690315/32474021-b36f08d4-c3ad-11e7-8953-43d4a63f7be4.png)
 
 
 
@@ -77,14 +78,18 @@ See [How to build](https://github.com/msgpack/msgpack-cli#how-to-build)
 
 ## Release Notes
 
+### ver.1.0.0-rc
+
+* Update: MsgPack-Cli assembly version : 1.0.0-rc [9d51fe3]
+
 ### ver.1.0.0-beta2
 
-* Update: MsgPack-Cli assembly version : ca751bb(1.0.0-beta2)
+* Update: MsgPack-Cli assembly version : 1.0.0-beta2 [ca751bb]
     * https://github.com/msgpack/msgpack-cli/releases/tag/1.0.0-beta2
 
 ### ver.0.9.2a
 
-* Update: MsgPack-Cli assembly version : b9c4903(0.9.2+)
+* Update: MsgPack-Cli assembly version : 0.9.2+ [b9c4903]
 * Feature: Generate Serializer
 * Feature: MsgPack Viewer
 * Feature: Update MsgPack-Cli assembly using shell script

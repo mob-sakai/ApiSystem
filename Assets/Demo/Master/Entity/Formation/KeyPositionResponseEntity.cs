@@ -30,7 +30,7 @@ public class KeyPositionResponseEntity : IResponsePacket
 	/// <summary>
 	/// 打順コード
 	/// </summary>
-	public int BattingOrderCode { get; private set; }
+	public eBattingOrderCode BattingOrderCode { get; private set; }
 
 	/// <summary>
 	/// 説明
@@ -40,7 +40,7 @@ public class KeyPositionResponseEntity : IResponsePacket
 
 	public void OnAfterDeserialize(ApiResponseMeta header)
 	{
-		BattingOrderCode	= (int)battingOrder;
+		BattingOrderCode	= (eBattingOrderCode)battingOrder;
 		Description			= description;
 	}
 }

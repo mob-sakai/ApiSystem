@@ -120,138 +120,132 @@ public  class UrlResponseEntity : IResponsePacket
 	/// </summary>
 	[SerializeField][MessagePackMember(17)]
 	private string howToUrl = string.Empty;
+
+	/// <summary>
+	/// 運営大会スケジュールURL
+	/// </summary>
+	[SerializeField][MessagePackMember(18)]
+	private string ecScheduleUrl = string.Empty;
 	#endregion
 
 	#region public properties
 	/// <summary>
 	/// お知らせURL
 	/// </summary>
-	[MessagePackIgnore]
 	public string NoticeUrl { get; private set; }
 
 	/// <summary>
 	/// 利用規約(terms of service)URL
 	/// </summary>
-	[MessagePackIgnore]
 	public string TosUrl { get; private set; }
 
 	/// <summary>
 	/// 資金決済法に基づく表示(Payment Services Act)URL
 	/// </summary>
-	[MessagePackIgnore]
 	public string PsaUrl { get; private set; }
 
 	/// <summary>
 	/// 特定商取引法に基づく表示(Specified Commercial Transactions)URL
 	/// </summary>
-	[MessagePackIgnore]
 	public string SctUrl { get; private set; }
 
 	/// <summary>
 	/// プライバシーポリシーURL
 	/// </summary>
-	[MessagePackIgnore]
 	public string PrivacyPolicyUrl { get; private set; }
 
 	/// <summary>
 	/// クレジットURL
 	/// </summary>
-	[MessagePackIgnore]
 	public string CreditUrl { get; private set; }
 
 	/// <summary>
 	/// コピーライトURL
 	/// </summary>
-	[MessagePackIgnore]
 	public string CopyRightUrl { get; private set; }
 
 	/// <summary>
 	/// サポートURL
 	/// </summary>
-	[MessagePackIgnore]
 	public string SupportUrl { get; private set; }
 
 	/// <summary>
 	/// ヘルプURL
 	/// </summary>
-	[MessagePackIgnore]
 	public string HelpUrl { get; private set; }
 
 	/// <summary>
 	/// ストアレビューURL
 	/// </summary>
-	[MessagePackIgnore]
 	public string ReviewUrl { get; private set; }
 
 	/// <summary>
 	/// 公式サイトURL
 	/// </summary>
-	[MessagePackIgnore]
 	public string OfficialSiteUrl { get; private set; }
 
 	/// <summary>
 	/// 公式TWIITER URL
 	/// </summary>
-	[MessagePackIgnore]
 	public string OfficialTwitterUrl { get; private set; }
 
 	/// <summary>
 	/// 公式LINE URL
 	/// </summary>
-	[MessagePackIgnore]
 	public string OfficialLineUrl { get; private set; }
 
 	/// <summary>
 	/// 公式Facebook URL
 	/// </summary>
-	[MessagePackIgnore]
 	public string OfficialFacebookUrl { get; private set; }
 
 	/// <summary>
 	/// TwitterアプリUrlScheme
 	/// </summary>
-	[MessagePackIgnore]
 	public string OfficialTwitterUrlScheme { get; private set; }
 
 	/// <summary>
 	/// facebookアプリUrlScheme
 	/// </summary>
-	[MessagePackIgnore]
 	public string OfficialFacebookUrlScheme { get; private set; }
 
 	/// <summary>
 	/// LINEアプリUrlScheme
 	/// </summary>
-	[MessagePackIgnore]
 	public string OfficialLineUrlScheme { get; private set; }
 
 	/// <summary>
 	/// 遊び方URL
 	/// </summary>
-	[MessagePackIgnore]
 	public string HowToUrl { get; private set; }
+
+	/// <summary>
+	/// 運営大会スケジュールURL
+	/// </summary>
+	public string EcScheduleUrl { get; private set; }
 	#endregion
 
 	public void OnAfterDeserialize(ApiResponseMeta header)
 	{
-//		NoticeUrl					= noticeUrl;
-//		TosUrl						= tosUrl;
-//		PsaUrl						= psaUrl;
-//		SctUrl						= sctUrl;
-//		PrivacyPolicyUrl			= privacyPolicyUrl;
-//		CreditUrl					= creditUrl;
-//		CopyRightUrl				= copyRightUrl;
-//		SupportUrl					= supportUrl;
-//		HelpUrl						= helpUrl;
-//		ReviewUrl					= reviewUrl;
-//		OfficialSiteUrl				= officialSiteUrl;
-//		OfficialTwitterUrl			= officialTwitterUrl;
-//		OfficialLineUrl				= officialLineUrl;
-//		OfficialFacebookUrl			= officialFacebookUrl;
-//		OfficialTwitterUrlScheme	= officialTwitterUrlScheme;
-//		OfficialLineUrlScheme		= officialLineUrlScheme;
-//		OfficialFacebookUrlScheme	= officialFacebookUrlScheme;
-//		HowToUrl					= howToUrl;
+		NoticeUrl					= noticeUrl;
+		TosUrl						= tosUrl;
+		PsaUrl						= psaUrl;
+		SctUrl						= sctUrl;
+		PrivacyPolicyUrl			= privacyPolicyUrl;
+		CreditUrl					= creditUrl;
+		CopyRightUrl				= copyRightUrl;
+		SupportUrl					= supportUrl;
+		HelpUrl						= helpUrl;
+		ReviewUrl					= reviewUrl;
+		OfficialSiteUrl				= officialSiteUrl;
+		OfficialTwitterUrl			= officialTwitterUrl;
+		OfficialLineUrl				= officialLineUrl;
+		OfficialFacebookUrl			= officialFacebookUrl;
+		OfficialTwitterUrlScheme	= officialTwitterUrlScheme;
+		OfficialLineUrlScheme		= officialLineUrlScheme;
+		OfficialFacebookUrlScheme	= officialFacebookUrlScheme;
+		HowToUrl					= howToUrl;
+		EcScheduleUrl				= ecScheduleUrl;
 	}
 }
 

@@ -9,6 +9,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.IO;
 using MsgPack.Serialization;
+using UnityEngine.Profiling;
 
 namespace Mobcast.Coffee.Api
 {
@@ -21,110 +22,182 @@ namespace Mobcast.Coffee.Api
 		/// APIリクエストのメタ情報です.
 		/// リクエストヘッダへ、自動的に追加されます.
 		/// </summary>
-		public static ApiRequestMeta requestMeta{ get; protected set; }
+		public static ApiRequestMeta requestMeta { get; protected set; }
 
 		/// <summary>
 		/// APIレスポンスのメタ情報です.
 		/// </summary>
-		public static ApiResponseMeta responseMeta{ get; protected set; }
+		public static ApiResponseMeta responseMeta { get; protected set; }
 
 		/// <summary>
 		/// 通信がビジー中かどうかを返します.
 		/// </summary>
-		public static bool isBusy{ get { return 0 != m_InProgressOperations.Count; } }
+		public static bool isBusy { get { return 0 != instance.m_InProgressOperations.Count; } }
 
 		/// <summary>
-		/// 通信オペレーション.
+		/// 現在通信中のオペレーション.
 		/// </summary>
-		public static List<ApiOperation> m_InProgressOperations = new List<ApiOperation> ();
+		List<ApiOperation> m_InProgressOperations = new List<ApiOperation>();
 
-		static readonly StringBuilder s_Json = new StringBuilder();
+		/// <summary>
+		/// オペレーションリトライ回数.
+		/// ネットワーク接続エラー等に対するリトライ回数を設定します.
+		/// </summary>
+		protected virtual int retryCount { get { return 3; } }
 
-		void Update ()
+		/// <summary>
+		/// ネットワークタイムアウト(秒)
+		/// </summary>
+		protected virtual int networkTimeout { get { return 10; } }
+
+		static RijndaelManaged s_Aes;
+		static ICryptoTransform s_Encryptor;
+		static ICryptoTransform s_Decryptor;
+
+		void Update()
 		{
-			// Update in-progress operations
-			for (int i = 0; i < m_InProgressOperations.Count;) {
-				var operation = m_InProgressOperations [i];
-				if (operation.Update ())
-					return;
+			if (m_InProgressOperations.Count == 0)
+				return;
 
-				operation.Dispose ();
-				m_InProgressOperations.RemoveAt (i);
-			}
+			var operation = m_InProgressOperations[0];
+			if (operation.UpdateAndNeedKeep())
+				return;
+
+			operation.Dispose();
+			m_InProgressOperations.RemoveAt(0);
 		}
 
 		/// <summary>
 		/// リクエストメタデータを利用してAPIマネージャを初期化します.
 		/// リクエストメタデータには、ユーザーデータや言語など、APIに必要なデータが含まれます.
 		/// </summary>
-		public static void Initialize (ApiRequestMeta meta)
+		public static void Initialize(ApiRequestMeta meta)
 		{
 			requestMeta = meta;
-			responseMeta = new ApiResponseMeta ();
+			responseMeta = new ApiResponseMeta();
+			instance.OnInitialize();
+		}
+
+		/// <summary>
+		/// 暗号化キーと初期ベクトルを設定します.
+		/// IVの変更が必要な場合、このメソッドを利用してください.
+		/// </summary>
+		public static void SetCryptoInfo(string key, string iv)
+		{
+			s_Aes = new RijndaelManaged();
+			s_Aes.BlockSize = 128;
+			s_Aes.KeySize = 128;
+			s_Aes.Padding = PaddingMode.ISO10126;
+			s_Aes.Mode = CipherMode.CBC;
+			s_Aes.Key = Encoding.UTF8.GetBytes(key);
+			s_Aes.IV = Encoding.UTF8.GetBytes(iv);
+
+			if (s_Encryptor != null)
+			{
+				s_Encryptor.Dispose();
+				s_Decryptor.Dispose();
+			}
+
+			s_Encryptor = s_Aes.CreateEncryptor();
+			s_Decryptor = s_Aes.CreateDecryptor();
+		}
+
+		/// <summary>
+		/// 初期化コールバック.
+		/// </summary>
+		protected virtual void OnInitialize()
+		{
+		}
+
+		/// <summary>
+		/// エラーコールバック.
+		/// 503エラー時はメンテンナンス画面を出す等、プロジェクト毎の処理を追加してください.
+		/// コールバック内で例外をスローすることで、ApiOperationのエラーコールバックをスルーできます.
+		/// </summary>
+		protected virtual void OnError(WebRequestErrorException ex)
+		{
 		}
 
 		/// <summary>
 		/// リクエストを実行します.
 		/// </summary>
 		/// <param name="apiRequest">APIリクエストオブジェクト.</param>
-		/// <param name="onSuccess">On success.</param>
-		/// <param name="onError">On error.</param>
+		/// <param name="onSuccessCallback">On success.</param>
+		/// <param name="onErrorCallback">On error.</param>
 		/// <typeparam name="TRequest">The 1st type parameter.</typeparam>
 		/// <typeparam name="TResponse">The 2nd type parameter.</typeparam>
-		public static ApiOperation Request<TRequest,TResponse> (TRequest apiRequest, Action<TResponse> onSuccess = null, Action<WebRequestErrorException> onError = null)
-			where TResponse: IResponsePacket
+		public static ApiOperation Request<TRequest,TResponse>(TRequest apiRequest, Action<TResponse> onSuccessCallback = null, Action<WebRequestErrorException> onErrorCallback = null)
+			where TResponse: class, IResponsePacket
 			where TRequest: ApiRequest<TRequest,TResponse>
 		{
-			// 新しいoperationを生成.
-			byte[] data = apiRequest.usePostMethod ? Serialize<TRequest> (apiRequest) : null;
-			var op = new ApiOperation (apiRequest, requestMeta, data);
-			op.onNetworkEnd += (req, obj) => {
+			// 新しいoperationを生成. postメソッドの場合、送信するbyte配列を生成.
+			byte[] data = apiRequest.usePostMethod ? Serialize(apiRequest) : null;
+			var op = new ApiOperation(apiRequest, requestMeta, data, instance.retryCount, instance.networkTimeout);
+			
+			// ネットワーク処理完了 コールバック.
+			// ネットワークリクエストが失敗/成功した時にコールされます.
+			// レスポンスコードやエラーメッセージによって、オペレーションコールバックをこーるします.
+			op.onNetworkEnd += (req, obj) =>
+			{
 
 				// webエラーの場合、エラー判定.
-				if(!string.IsNullOrEmpty(op.error))
+				if (!string.IsNullOrEmpty(op.error))
 				{
 					var reqEx = new WebRequestErrorException(req.responseCode, op.error);
-					Debug.LogErrorFormat ("[ApiOperation] Api通信 失敗(レスポンスエラー:{0})<{1}> : {2}", reqEx.StatusCode, apiRequest.GetType(), reqEx);
-					if (onError != null)
-						onError (reqEx);
+					Debug.LogErrorFormat("[ApiOperation] Api通信 失敗(ステータス:{0})<{1}> : {2}", reqEx.StatusCode, apiRequest.GetType(), reqEx);
+					
+					// APIマネージャー側 エラーコールバック
+					instance.OnError(reqEx);
+					
+					// オペレーション側 エラーコールバック
+					if (onErrorCallback != null)
+						onErrorCallback(reqEx);
 					return;
 				}
 					
 
 				// レスポンスメタデータを更新.
-				responseMeta.FromDictionary (req.GetResponseHeaders ());
+				responseMeta.FromDictionary(req.GetResponseHeaders());
 
 				// パケットのデシリアライズを実行.
-				TResponse res = Deserialize<TResponse> (req.downloadHandler.data);
-				res.OnAfterDeserialize (responseMeta);
+				TResponse res = Deserialize(req.downloadHandler.data, typeof(TResponse)) as TResponse;
+				res.OnAfterDeserialize(responseMeta);
 
 				// リクエストメタデータのセッション情報を更新.
 				ApiResponsePacket apiResponsePacket = res as ApiResponsePacket;
 				if (apiResponsePacket != null)
 				{
 					// レスポンス内部パケットエラーの場合、エラー判定.
-					if(apiResponsePacket.Info.Code != ApiErrorCode.NONE)
+					if (apiResponsePacket.Info.Code != ApiErrorCode.NONE)
 					{
 						var reqEx = new WebRequestErrorException((long)apiResponsePacket.Info.Code, apiResponsePacket.Info.Msg);
-						Debug.LogErrorFormat ("[ApiOperation] Api通信 失敗(パケットエラー:{0})<{1}> : {2}", reqEx.StatusCode, apiRequest.GetType(), reqEx);
+						Debug.LogErrorFormat("[ApiOperation] Api通信 失敗(内部パケットエラー:{0})<{1}> : {2}", reqEx.StatusCode, apiRequest.GetType(), reqEx);
 						op.error = reqEx.Message;
-						if (onError != null)
-							onError (reqEx);
+						
+						// APIマネージャー側エラーコールバック
+						instance.OnError(reqEx);
+					
+						// オペレーション側 エラーコールバック
+						if (onErrorCallback != null)
+							onErrorCallback(reqEx);
 						return;
 					}
 
-					requestMeta.UpdateSession (apiResponsePacket.Info);
+					requestMeta.UpdateSession(apiResponsePacket.Info);
 					ApiTimeUtil.SetServerTime(apiResponsePacket.Info.serverTime);
 				}
 
-				apiRequest.UpdateResponse (res);
-
-				if (onSuccess != null) {
-					onSuccess (res);
+				apiRequest.UpdateResponse(res);
+				
+				// オペレーション側 成功コールバック
+				if (onSuccessCallback != null)
+				{
+					onSuccessCallback(res);
 				}
 			};
-			
-			m_InProgressOperations.Add (op);
+
+			// オペレーションをキューに追加.
+			instance.m_InProgressOperations.Add(op);
 			return op;
 		}
 
@@ -134,24 +207,36 @@ namespace Mobcast.Coffee.Api
 		/// </summary>
 		/// <param name="data">APIレスポンスデータ</param>
 		/// <returns>ResponsePacketオブジェクト</returns>
-		static byte[] Serialize<T> (T obj)
+		public static byte[] Serialize(object obj)
 		{
+			Type type = obj.GetType();
+			Profiler.BeginSample("Serialize" + type.Name);
+			
 			// MsgPackの場合はMsgPackパーサー、Jsonの場合はJsonUtilityを使ってシリアライズ.
+			Profiler.BeginSample("Object Parse");
 			byte[] data = requestMeta.packetProtocolCode == PacketProtocolCode.MSG_PACK
-				? ObjectParser.SerializeToMsgPack (obj)
-				: ObjectParser.SerializeToJson (obj);
+				? MessagePackSerializer.Get(type).PackSingleObject(obj)
+				: Encoding.UTF8.GetBytes(JsonUtility.ToJson(obj));
+			Profiler.EndSample();
 
-			Debug.LogFormat ("シリアライズデータ({2}) : {0}\n{1}", typeof(T), ToJson (data, requestMeta.packetProtocolCode == PacketProtocolCode.JSON), requestMeta.packetProtocolCode);
+			Debug.LogFormat("シリアライズデータ({2}) : {0}\n{1}", type, ToReadableText(data, requestMeta.packetProtocolCode == PacketProtocolCode.JSON), requestMeta.packetProtocolCode);
 
-			// 暗号化指定されている場合は暗号化.
+			// 暗号化指定されている場合はAES暗号化.
 			if (requestMeta.packetEncryptCode == PacketEncryptCode.ON)
-				data = ObjectParser.Encrypt (data, requestMeta.key, requestMeta.iv);
+			{
+				data = Encrypt(data);
+			}
 
 			//TODO: JSON BASE64変換不要なら外す.
 			// JSON BASE64変換
 			if (requestMeta.packetEncryptCode == PacketEncryptCode.ON && requestMeta.packetProtocolCode == PacketProtocolCode.JSON)
-				data = Encoding.UTF8.GetBytes (Convert.ToBase64String (data));
+			{
+				Profiler.BeginSample("Convert Base64");
+				data = Encoding.UTF8.GetBytes(Convert.ToBase64String(data));
+				Profiler.EndSample();
+			}
 			
+			Profiler.EndSample();
 			return data;
 		}
 
@@ -162,42 +247,64 @@ namespace Mobcast.Coffee.Api
 		/// </summary>
 		/// <param name="data">APIレスポンスデータ</param>
 		/// <returns>ResponsePacketオブジェクト</returns>
-		static T Deserialize<T> (byte[] data)
+		public static object Deserialize(byte[] data, System.Type type)
 		{
+			Profiler.BeginSample("Deserialize" + type.Name);
 			//TODO: JSON BASE64変換不要なら外す.
 			// JSON BASE64変換
 			if (requestMeta.packetEncryptCode == PacketEncryptCode.ON && requestMeta.packetProtocolCode == PacketProtocolCode.JSON)
-				data = Convert.FromBase64String (Encoding.UTF8.GetString (data));
+			{
+				Debug.LogFormat("Base64({0}) : {1}", type, Encoding.UTF8.GetString(data));
 
-			// 暗号化指定されている場合は復号化.
+				Profiler.BeginSample("Convert Base64");
+				data = Convert.FromBase64String(Encoding.UTF8.GetString(data));
+				Profiler.EndSample();
+			}
+
+			// 暗号化指定されている場合はAES復号化.
 			if (requestMeta.packetEncryptCode == PacketEncryptCode.ON)
-				data = ObjectParser.Decrypt (data, requestMeta.key, requestMeta.iv);
+			{
+				data = Decrypt(data);
+			}
 
-			Debug.LogFormat ("デシリアライズデータ({2}) : {0}\n{1}", typeof(T), ToJson (data, requestMeta.packetProtocolCode == PacketProtocolCode.JSON), requestMeta.packetProtocolCode);
+			Debug.LogFormat("デシリアライズデータ({2}) : {0}\n{1}", type, ToReadableText(data, requestMeta.packetProtocolCode == PacketProtocolCode.JSON), requestMeta.packetProtocolCode);
 
 			// MsgPackの場合はMsgPackパーサー、Jsonの場合はJsonUtilityを使ってデシリアライズ.
-			T obj = requestMeta.packetProtocolCode == PacketProtocolCode.MSG_PACK
-				? ObjectParser.DeserializeFromMsgPack<T> (data)
-				: ObjectParser.DeserializeFromJson<T> (data);
-
+			Profiler.BeginSample("Object Parse");
+			object obj = requestMeta.packetProtocolCode == PacketProtocolCode.MSG_PACK
+				? MessagePackSerializer.Get(type).UnpackSingleObject(data)
+				: JsonUtility.FromJson(Encoding.UTF8.GetString(data), type);
+			Profiler.EndSample();
+				
+			Profiler.EndSample();
 			return obj;
 		}
-		
-		public static string ToJson (byte[] data, bool isJson)
-		{
-			s_Json.Length = 0;
-			s_Json.Append(
-				isJson
-				? Encoding.UTF8.GetString(data)
-				: MessagePackSerializer.UnpackMessagePackObject (data)
-			);
 
-			if(5000 < s_Json.Length)
-			{
-				s_Json.Length = 5000;
-				s_Json.Append("...");
-			}
-			return s_Json.ToString();
+		public static byte[] Encrypt(byte[] data)
+		{
+			Profiler.BeginSample("Encrypt");
+			data = s_Encryptor.TransformFinalBlock(data, 0, data.Length);
+			Profiler.EndSample();
+			return data;
+		}
+
+		public static byte[] Decrypt(byte[] data)
+		{
+			Profiler.BeginSample("Decrypt");
+			data = s_Decryptor.TransformFinalBlock(data, 0, data.Length);
+			Profiler.EndSample();
+			return data;
+		}
+
+		public static string ToReadableText(byte[] data, bool isJson)
+		{
+			string txt = isJson
+				? Encoding.UTF8.GetString(data)
+				: MessagePackSerializer.UnpackMessagePackObject(data).ToString();
+				
+			int length = Mathf.Clamp(txt.Length, 0, 5000);
+			
+			return new StringBuilder(length).Append(txt, 0, length).ToString();
 		}
 	}
 
@@ -208,17 +315,17 @@ namespace Mobcast.Coffee.Api
 
 		public readonly HttpStatusCode StatusCode;
 
-		public WebRequestErrorException (long responseCode, string text)
+		public WebRequestErrorException(long responseCode, string text)
 		{
 			this.Text = text; 
 			this.StatusCode = (HttpStatusCode)responseCode;
 		}
 
-		public override string ToString ()
+		public override string ToString()
 		{
-			return string.Format ("{0} : {1}", StatusCode, Text);
+			return string.Format("{0} : {1}", StatusCode, Text);
 		}
 
-		public override string Message { get { return ToString (); } }
+		public override string Message { get { return ToString(); } }
 	}
 }

@@ -54,7 +54,7 @@ public  class PhotonServerInfoResponseEntity : IResponsePacket
 	/// <summary>
 	/// photonサーバーコード
 	/// </summary>
-	public int PhotonServerCode { get; private set; }
+	public ePhotonServerCode PhotonServerCode { get; private set; }
 
 	/// <summary>
 	/// ホスト名
@@ -84,7 +84,7 @@ public  class PhotonServerInfoResponseEntity : IResponsePacket
 
 	public void OnAfterDeserialize(ApiResponseMeta header)
 	{
-		PhotonServerCode	= (int)photonServer;
+		PhotonServerCode	= (ePhotonServerCode)photonServer;
 		HostName			= hostName;
 		Port				= port;
 		ApplicationName		= applicationName;

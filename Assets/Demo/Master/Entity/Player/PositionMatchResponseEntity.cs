@@ -30,17 +30,17 @@ public class PositionMatchResponseEntity : IResponsePacket
 	/// <summary>
 	/// ポジションコード
 	/// </summary>
-	public int PositionCode{ get; private set; }
+	public ePositionCode PositionCode{ get; private set; }
 
 	/// <summary>
 	/// 守備適正コード
 	/// </summary>
-	public int ParameterMatchCode { get; private set; }
+	public eParameterMatchCode ParameterMatchCode { get; private set; }
 	#endregion
 
 	public void OnAfterDeserialize(ApiResponseMeta header)
 	{
-		PositionCode		= (int)position;
-		ParameterMatchCode	= (int)parameterMatch;
+		PositionCode		= (ePositionCode)position;
+		ParameterMatchCode	= (eParameterMatchCode)parameterMatch;
 	}
 }

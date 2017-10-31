@@ -48,6 +48,12 @@ public  class InformationResponseEntity : IResponsePacket
 	/// </summary>
 	[SerializeField][MessagePackMember(5)]
 	private InformationItemResponseEntity transferInformationItem;
+
+	/// <summary>
+	/// イベント大会インフォメーションアイテム
+	/// </summary>
+	[SerializeField][MessagePackMember(6)]
+	private InformationItemResponseEntity eventConventionInformationItem;
 	#endregion
 
 	#region public properties
@@ -85,16 +91,22 @@ public  class InformationResponseEntity : IResponsePacket
 	/// ショップインフォメーションアイテム
 	/// </summary>
 	public InformationItemResponseEntity ShopInformationItem { get; private set; }
+
+	/// <summary>
+	/// イベント大会インフォメーションアイテム
+	/// </summary>
+	public InformationItemResponseEntity EventConventionInformationItem { get; private set; }
 	#endregion
 
 	public void OnAfterDeserialize(ApiResponseMeta header)
 	{
-		AgentInformationItem		= agentInformationItem.DeserializeOrDefault(header);
-		FormationInformationItem	= formationInformationItem.DeserializeOrDefault(header);
-		TeamInformationItem			= teamInformationItem.DeserializeOrDefault(header);
-		LeagueInformationItem		= leagueInformationItem.DeserializeOrDefault(header);
-		ClubInformationItem			= clubInformationItem.DeserializeOrDefault(header);
-		TransferInformationItem		= transferInformationItem.DeserializeOrDefault(header);
+		AgentInformationItem			= agentInformationItem.DeserializeOrDefault(header);
+		FormationInformationItem		= formationInformationItem.DeserializeOrDefault(header);
+		TeamInformationItem				= teamInformationItem.DeserializeOrDefault(header);
+		LeagueInformationItem			= leagueInformationItem.DeserializeOrDefault(header);
+		ClubInformationItem				= clubInformationItem.DeserializeOrDefault(header);
+		TransferInformationItem			= transferInformationItem.DeserializeOrDefault(header);
+		EventConventionInformationItem	= eventConventionInformationItem.DeserializeOrDefault(header);
 	}
 }
 

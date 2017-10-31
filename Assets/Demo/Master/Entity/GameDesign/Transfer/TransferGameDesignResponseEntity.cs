@@ -92,12 +92,12 @@ public  class TransferGameDesignResponseEntity : IResponsePacket {
 	/// <summary>
 	/// 移籍登録スロット3開放条件(リーグランクコード)
 	/// </summary>
-	public int Slot3RequirementLeagueRank { get; private set; }
+	public eLeagueRankCode Slot3RequirementLeagueRank { get; private set; }
 
 	/// <summary>
 	/// 移籍登録スロット4開放条件(リーグランクコード)
 	/// </summary>
-	public int Slot4RequirementLeagueRank { get; private set; }
+	public eLeagueRankCode Slot4RequirementLeagueRank { get; private set; }
 
 	/// <summary>
 	/// 移籍登録有効時間(秒)
@@ -130,8 +130,8 @@ public  class TransferGameDesignResponseEntity : IResponsePacket {
 		TransferListupNumbers		= transferListupNumbers.DeserializeOrDefault(header);
 		MarketPrice					= marketPrice.DeserializeOrDefault(header);
 		RequirementTrophy			= requirementTrophy;
-		Slot3RequirementLeagueRank = (int)slot3RequirementLeagueRank;
-		Slot4RequirementLeagueRank = (int)slot4RequirementLeagueRank;
+		Slot3RequirementLeagueRank = (eLeagueRankCode)slot3RequirementLeagueRank;
+		Slot4RequirementLeagueRank = (eLeagueRankCode)slot4RequirementLeagueRank;
 		RegistrationPeriodSec		= registrationPeriodSec;
 		RegistrationIntervalSec		= registrationIntervalSec;
 		CommissionRate				= commissionRate;

@@ -30,17 +30,17 @@ public class FormationPositionResponseEntity : IResponsePacket
 	/// <summary>
 	/// 打順コード
 	/// </summary>
-	public int BattingOrderCode { get; private set; }
+	public eBattingOrderCode BattingOrderCode { get; private set; }
 
 	/// <summary>
 	/// ポジションコード
 	/// </summary>
-	public int PositionCode { get; private set; }
+	public ePositionCode PositionCode { get; private set; }
 	#endregion
 
 	public void OnAfterDeserialize(ApiResponseMeta header)
 	{
-		BattingOrderCode	= (int)battingOrder;
-		PositionCode		= (int)position;
+		BattingOrderCode	= (eBattingOrderCode)battingOrder;
+		PositionCode		= (ePositionCode)position;
 	}
 }

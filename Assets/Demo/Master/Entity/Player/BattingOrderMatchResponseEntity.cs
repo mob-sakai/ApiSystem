@@ -30,17 +30,17 @@ public class BattingOrderMatchResponseEntity : IResponsePacket
 	/// <summary>
 	/// 打順コード
 	/// </summary>
-	public int BattingOrderCode { get; private set; }
+	public eBattingOrderCode BattingOrderCode { get; private set; }
 
 	/// <summary>
 	/// 打順適正コード
 	/// </summary>
-	public int ParameterMatchCode { get; private set; }
+	public eParameterMatchCode ParameterMatchCode { get; private set; }
 	#endregion
 
 	public void OnAfterDeserialize(ApiResponseMeta header)
 	{
-		BattingOrderCode	= (int)battingOrder;
-		ParameterMatchCode	= (int)parameterMatch;
+		BattingOrderCode	= (eBattingOrderCode)battingOrder;
+		ParameterMatchCode	= (eParameterMatchCode)parameterMatch;
 	}
 }

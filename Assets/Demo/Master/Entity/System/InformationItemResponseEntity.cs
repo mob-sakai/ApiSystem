@@ -36,7 +36,7 @@ public  class InformationItemResponseEntity : IResponsePacket
 	/// <summary>
 	/// インフォメーション種類コード
 	/// </summary>
-	public int InformationKindCode { get; private set; }
+	public eInformationKindCode InformationKindCode { get; private set; }
 
 	/// <summary>
 	/// タイトル
@@ -51,7 +51,7 @@ public  class InformationItemResponseEntity : IResponsePacket
 
 	public void OnAfterDeserialize(ApiResponseMeta header)
 	{
-		InformationKindCode		= (int)informationKind;
+		InformationKindCode		= (eInformationKindCode)informationKind;
 		Title					= title;
 		InformationElementList	= informationElementList.DeserializeOrDefault(header);
 	}

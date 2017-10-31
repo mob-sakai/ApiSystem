@@ -136,27 +136,27 @@ public class FormationResponseEntity : IResponsePacket
 	/// <summary>
 	/// [レギュラー野手のみ] ポジションデータマップ
 	/// </summary>
-	public Dictionary<int, FormationPositionResponseEntity> FormationPositionMap { get; private set; }
+	public Dictionary<eBattingOrderCode, FormationPositionResponseEntity> FormationPositionMap { get; private set; }
 
 	/// <summary>
 	/// [レギュラー野手のみ] 野手能力マップ
 	/// </summary>
-	public Dictionary<int, FormationFielderStatusResponseEntity> FormationFielderStatusMap { get; private set; }
+	public Dictionary<eBattingOrderCode, FormationFielderStatusResponseEntity> FormationFielderStatusMap { get; private set; }
 
 	/// <summary>
 	/// [投手のみ] 投手能力マップ
 	/// </summary>
-	public Dictionary<int, FormationPitcherStatusResponseEntity> FormationPitcherStatusMap { get; private set; }
+	public Dictionary<eBattingOrderCode, FormationPitcherStatusResponseEntity> FormationPitcherStatusMap { get; private set; }
 
 	/// <summary>
 	/// [レギュラー野手、投手] モデル選手データマップ
 	/// </summary>
-	public Dictionary<int, ModelPlayerResponseEntity> ModelPlayerMap { get; private set; }
+	public Dictionary<eBattingOrderCode, ModelPlayerResponseEntity> ModelPlayerMap { get; private set; }
 
 	/// <summary>
 	/// キーポジションデータマップ
 	/// </summary>
-	public Dictionary<int, KeyPositionResponseEntity> KeyPositionMap { get; private set; }
+	public Dictionary<eBattingOrderCode, KeyPositionResponseEntity> KeyPositionMap { get; private set; }
 
 	/// <summary>
 	/// キーポジションデータリスト
@@ -182,9 +182,9 @@ public class FormationResponseEntity : IResponsePacket
 		KeyPositionList				= keyPositionList.DeserializeOrDefault(header);
 	}
 
-	private Dictionary<int, FormationPositionResponseEntity> MakeFormationPositionMap(List<FormationPositionResponseEntity> formationPositionList, ApiResponseMeta header)
+	private Dictionary<eBattingOrderCode, FormationPositionResponseEntity> MakeFormationPositionMap(List<FormationPositionResponseEntity> formationPositionList, ApiResponseMeta header)
 	{
-		Dictionary<int, FormationPositionResponseEntity> formationPositionMap = new Dictionary<int, FormationPositionResponseEntity>();
+		Dictionary<eBattingOrderCode, FormationPositionResponseEntity> formationPositionMap = new Dictionary<eBattingOrderCode, FormationPositionResponseEntity>();
 
 		formationPositionList.ForEach((FormationPositionResponseEntity formationPositionResponseEntity) =>
 		{
@@ -195,9 +195,9 @@ public class FormationResponseEntity : IResponsePacket
 		return formationPositionMap;
 	}
 
-	private Dictionary<int, FormationFielderStatusResponseEntity> MakeFormationFielderStatusMap(List<FormationFielderStatusResponseEntity> formationFielderStatusList, ApiResponseMeta header)
+	private Dictionary<eBattingOrderCode, FormationFielderStatusResponseEntity> MakeFormationFielderStatusMap(List<FormationFielderStatusResponseEntity> formationFielderStatusList, ApiResponseMeta header)
 	{
-		Dictionary<int, FormationFielderStatusResponseEntity> formationFielderStatusMap = new Dictionary<int, FormationFielderStatusResponseEntity>();
+		Dictionary<eBattingOrderCode, FormationFielderStatusResponseEntity> formationFielderStatusMap = new Dictionary<eBattingOrderCode, FormationFielderStatusResponseEntity>();
 
 		formationFielderStatusList.ForEach((FormationFielderStatusResponseEntity formationFielderStatusResponseEntity) =>
 		{
@@ -208,9 +208,9 @@ public class FormationResponseEntity : IResponsePacket
 		return formationFielderStatusMap;
 	}
 
-	private Dictionary<int, FormationPitcherStatusResponseEntity> MakeFormationPitcherStatusMap(List<FormationPitcherStatusResponseEntity> formationPitcherStatusList, ApiResponseMeta header)
+	private Dictionary<eBattingOrderCode, FormationPitcherStatusResponseEntity> MakeFormationPitcherStatusMap(List<FormationPitcherStatusResponseEntity> formationPitcherStatusList, ApiResponseMeta header)
 	{
-		Dictionary<int, FormationPitcherStatusResponseEntity> formationPitcherStatusMap = new Dictionary<int, FormationPitcherStatusResponseEntity>();
+		Dictionary<eBattingOrderCode, FormationPitcherStatusResponseEntity> formationPitcherStatusMap = new Dictionary<eBattingOrderCode, FormationPitcherStatusResponseEntity>();
 
 		formationPitcherStatusList.ForEach((FormationPitcherStatusResponseEntity formationPitcherStatusResponseEntity) =>
 		{
@@ -221,9 +221,9 @@ public class FormationResponseEntity : IResponsePacket
 		return formationPitcherStatusMap;
 	}
 
-	private Dictionary<int, ModelPlayerResponseEntity> MakeModelPlayerMap(List<ModelPlayerResponseEntity> modelPlayerList, ApiResponseMeta header)
+	private Dictionary<eBattingOrderCode, ModelPlayerResponseEntity> MakeModelPlayerMap(List<ModelPlayerResponseEntity> modelPlayerList, ApiResponseMeta header)
 	{
-		Dictionary<int, ModelPlayerResponseEntity> modelPlayerResponseEntityMap = new Dictionary<int, ModelPlayerResponseEntity>();
+		Dictionary<eBattingOrderCode, ModelPlayerResponseEntity> modelPlayerResponseEntityMap = new Dictionary<eBattingOrderCode, ModelPlayerResponseEntity>();
 
 		modelPlayerList.ForEach((ModelPlayerResponseEntity modelPlayerResponseEntity) =>
 		{
@@ -234,9 +234,9 @@ public class FormationResponseEntity : IResponsePacket
 		return modelPlayerResponseEntityMap;
 	}
 
-	private Dictionary<int, KeyPositionResponseEntity> MakeKeyPositionMap(List<KeyPositionResponseEntity> keyPositionList, ApiResponseMeta header)
+	private Dictionary<eBattingOrderCode, KeyPositionResponseEntity> MakeKeyPositionMap(List<KeyPositionResponseEntity> keyPositionList, ApiResponseMeta header)
 	{
-		Dictionary<int, KeyPositionResponseEntity> keyPositionResponseEntityMap = new Dictionary<int, KeyPositionResponseEntity>();
+		Dictionary<eBattingOrderCode, KeyPositionResponseEntity> keyPositionResponseEntityMap = new Dictionary<eBattingOrderCode, KeyPositionResponseEntity>();
 
 		keyPositionList.ForEach((KeyPositionResponseEntity keyPositionResponseEntity) =>
 		{

@@ -29,7 +29,7 @@ public class MasterUrlDataResponsePacket : ApiResponsePacket
 	/// <summary>
 	/// URL管理データ
 	/// </summary>
-	public UrlResponseEntity Url { get{return url;} }
+	public UrlResponseEntity Url { get; private set; }
 	#endregion
 
 	/// <summary>
@@ -41,7 +41,8 @@ public class MasterUrlDataResponsePacket : ApiResponsePacket
 	public override void OnAfterDeserialize (ApiResponseMeta header)
 	{
 		base.OnAfterDeserialize (header);
-		Url.DeserializeOrDefault(header);
+
+		Url	= url.DeserializeOrDefault(header);
 	}
 }
 

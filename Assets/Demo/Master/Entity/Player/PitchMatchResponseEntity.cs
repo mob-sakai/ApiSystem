@@ -30,17 +30,17 @@ public class PitchMatchResponseEntity : IResponsePacket
 	/// <summary>
 	/// メンバータイプコード
 	/// </summary>
-	public int MemberTypeCode { get; private set; }
+	public eMemberTypeCode MemberTypeCode { get; private set; }
 
 	/// <summary>
 	/// 投手適正コード
 	/// </summary>
-	public int ParameterMatchCode { get; private set; }
+	public eParameterMatchCode ParameterMatchCode { get; private set; }
 	#endregion
 
 	public void OnAfterDeserialize(ApiResponseMeta header)
 	{
-		MemberTypeCode		= (int)memberType;
-		ParameterMatchCode	= (int)parameterMatch;
+		MemberTypeCode		= (eMemberTypeCode)memberType;
+		ParameterMatchCode	= (eParameterMatchCode)parameterMatch;
 	}
 }

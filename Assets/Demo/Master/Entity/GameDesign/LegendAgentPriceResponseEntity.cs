@@ -36,6 +36,18 @@ public class LegendAgentPriceResponseEntity : IResponsePacket
 	/// </summary>
 	[SerializeField][MessagePackMember(3)]
 	private int ultraRarePrice = new int ();
+
+	/// <summary>
+	/// レジェンドエージェント価格：特性ボーナススーパーレア
+	/// </summary>
+	[SerializeField][MessagePackMember(4)]
+	private int skillBonusSuperRarePrice = new int ();
+
+	/// <summary>
+	/// レジェンドエージェント価格：特性ボーナスウルトラレア
+	/// </summary>
+	[SerializeField][MessagePackMember(5)]
+	private int skillBonusUltraRarePrice = new int ();
 	#endregion
 
 	#region public properties
@@ -58,13 +70,25 @@ public class LegendAgentPriceResponseEntity : IResponsePacket
 	/// レジェンドエージェント価格：ウルトラレア
 	/// </summary>
 	public int UltraRarePrice { get; private set; }
+
+	/// <summary>
+	/// レジェンドエージェント価格：特性ボーナススーパーレア
+	/// </summary>
+	public int SkillBonusSuperRarePrice { get; private set; }
+
+	/// <summary>
+	/// レジェンドエージェント価格：特性ボーナスウルトラレア
+	/// </summary>
+	public int SkillBonusUltraRarePrice { get; private set; }
 	#endregion
 
 	public void OnAfterDeserialize(ApiResponseMeta header)
 	{
-		NormalPrice		= normalPrice;
-		RarePrice		= rarePrice;
-		SuperRarePrice	= superRarePrice;
-		UltraRarePrice	= ultraRarePrice;
+		NormalPrice					= normalPrice;
+		RarePrice					= rarePrice;
+		SuperRarePrice				= superRarePrice;
+		UltraRarePrice				= ultraRarePrice;
+		SkillBonusSuperRarePrice	= skillBonusSuperRarePrice;
+		SkillBonusUltraRarePrice	= skillBonusUltraRarePrice;
 	}
 }

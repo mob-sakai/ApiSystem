@@ -11,86 +11,49 @@ namespace Mobcast.Coffee.Api
 	/// API通信におけるメタデータを管理します.
 	/// </summary>
 	[System.Serializable]
-	public class ApiRequestMeta : ApiResponseMeta, ISerializationCallbackReceiver
+	public class ApiRequestMeta : ApiResponseMeta
 	{
-
 		/// <summary>
 		/// プラットフォーム.
 		/// </summary>
 		public PlatformCode platformCode { get { return m_Platform; } set { m_Platform = value; } }
-
 		[SerializeField] PlatformCode m_Platform = PlatformCode.UNKNOWN;
 
 		/// <summary>
-		/// AES Key.
+		/// ユニークID.
 		/// </summary>
-		public string key { get { return m_Key; } set { m_Key = value; } }
-
-		[SerializeField] string m_Key;
-
-		/// <summary>
-		/// AES IV.
-		/// </summary>
-		public string iv { get { return m_IV; } private set { m_IV = value; } }
-
-		[SerializeField] string m_IV;
-
-		/// <summary>
-		/// AES Key.
-		/// </summary>
-		public string uid {
-			get { return m_Uid; }
-			set {
-				m_Uid = value;
-
-				//ivを自動的に更新.
-				if (value == null)
-					value = "";
-
-				value = value.PadRight (8, '0');
-
-				int maxSize = value.Length;
-				int half = maxSize - (maxSize / 2);
-
-				iv = new StringBuilder (16)
-					.Append (value.Substring (half - 4, 4)) 
-					.Append (value.Substring (0, 4))
-					.Append (value.Substring (maxSize - 4, 4))
-					.Append (value.Substring (half - 2, 4))
-					.ToString ();
-			}
-		}
-		[SerializeField] string m_Uid;
+		public string uid { get { return m_Uid; } set { m_Uid = value; } }
+		[SerializeField] string m_Uid = "";
 
 		/// <summary>
 		/// プレイヤーID.
 		/// </summary>
 		public string playerId { get { return m_PlayerId; } set { m_PlayerId = value; } }
-		[SerializeField] string m_PlayerId;
+		[SerializeField] string m_PlayerId = "";
 
 		/// <summary>
 		/// アプリID.
 		/// </summary>
 		public string appId { get { return m_AppId; } set { m_AppId = value; } }
-		[SerializeField] string m_AppId;
+		[SerializeField] string m_AppId = "";
 
 		/// <summary>
 		/// アプリバージョン
 		/// </summary>
 		public string appVersion { get { return m_AppVersion; } set { m_AppVersion = value; } }
-		[SerializeField] string m_AppVersion;
+		[SerializeField] string m_AppVersion = "";
 
 		/// <summary>
 		/// マスタデータバージョン
 		/// </summary>
 		public string masterDataVersion { get { return m_MasterDataVersion; } set { m_MasterDataVersion = value; } }
-		[SerializeField] string m_MasterDataVersion;
+		[SerializeField] string m_MasterDataVersion = "";
 
 		/// <summary>
 		/// リソースバージョン
 		/// </summary>
 		public string resourceVersion { get { return m_ResourceVersion; } set { m_ResourceVersion = value; } }
-		[SerializeField] string m_ResourceVersion;
+		[SerializeField] string m_ResourceVersion = "";
 
 		/// <summary>
 		/// エラー時のCSトラッキング用リクエストID
@@ -101,13 +64,13 @@ namespace Mobcast.Coffee.Api
 		/// セッションID
 		/// </summary>
 		public string sessionId { get { return m_SessionId; } set { m_SessionId = value; } }
-		[SerializeField] string m_SessionId;
+		[SerializeField] string m_SessionId = "";
 
 		/// <summary>
 		/// トークン
 		/// </summary>
 		public string token { get { return m_Token; } set { m_Token = value; } }
-		[SerializeField] string m_Token;
+		[SerializeField] string m_Token = "";
 
 		readonly Dictionary<string,string> headers = new Dictionary<string, string> ();
 
@@ -210,15 +173,6 @@ namespace Mobcast.Coffee.Api
 
 
 			return headers;
-		}
-
-		public virtual void OnBeforeSerialize ()
-		{
-		}
-
-		public virtual void OnAfterDeserialize ()
-		{
-			uid = m_Uid;
 		}
 	}
 }

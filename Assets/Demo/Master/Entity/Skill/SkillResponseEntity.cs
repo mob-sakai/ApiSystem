@@ -47,7 +47,7 @@ public class SkillResponseEntity : IResponsePacket
 	/// <summary>
 	/// 特性レアリティコード
 	/// </summary>
-	public int SkillRarityCode;
+	public eSkillRarityCode SkillRarityCode;
 
 	/// <summary>
 	/// 特性名
@@ -63,7 +63,7 @@ public class SkillResponseEntity : IResponsePacket
 	public void OnAfterDeserialize(ApiResponseMeta header)
 	{
 		SkillId			= skillId;
-		SkillRarityCode	= (int)skillRarity;
+		SkillRarityCode	= (eSkillRarityCode)skillRarity;
 		SkillName		= skillName;
 		Description		= description;
 	}

@@ -60,7 +60,7 @@ public class FormationPitcherStatusResponseEntity : IResponsePacket
 	/// <summary>
 	/// 打順コード
 	/// </summary>
-	public int BattingOrderCode { get; private set; }
+	public eBattingOrderCode BattingOrderCode { get; private set; }
 
 	/// <summary>
 	/// 球威能力の必要有無
@@ -90,17 +90,17 @@ public class FormationPitcherStatusResponseEntity : IResponsePacket
 	/// <summary>
 	/// 左右(投打)適正コード
 	/// </summary>
-	public int HandedMatchCode { get; private set; }
+	public eHandedMatchCode HandedMatchCode { get; private set; }
 	#endregion
 
 	public void OnAfterDeserialize(ApiResponseMeta header)
 	{
-		BattingOrderCode	= (int)battingOrder;
+		BattingOrderCode	= (eBattingOrderCode)battingOrder;
 		Arm					= arm;
 		BreakingBall		= breakingBall;
 		Control				= control;
 		Stamina				= stamina;
 		Fielding			= fielding;
-		HandedMatchCode		= (int)handedMatch;
+		HandedMatchCode		= (eHandedMatchCode)handedMatch;
 	}
 }
