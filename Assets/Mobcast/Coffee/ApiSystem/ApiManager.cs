@@ -131,8 +131,9 @@ namespace Mobcast.Coffee.Api
 			where TRequest: ApiRequest<TRequest,TResponse>
 		{
 			// 新しいoperationを生成. postメソッドの場合、送信するbyte配列を生成.
-			byte[] data = apiRequest.usePostMethod ? Serialize(apiRequest) : null;
-			var op = new ApiOperation(apiRequest, requestMeta, data, instance.retryCount, instance.networkTimeout);
+			var meta = apiRequest.meta;
+			byte[] data = apiRequest.usePostMethod ? Serialize(apiRequest, meta) : null;
+			var op = new ApiOperation(apiRequest, meta, data, instance.retryCount, instance.networkTimeout);
 			
 			// ネットワーク処理完了 コールバック.
 			// ネットワークリクエストが失敗/成功した時にコールされます.
@@ -160,7 +161,7 @@ namespace Mobcast.Coffee.Api
 				responseMeta.FromDictionary(req.GetResponseHeaders());
 
 				// パケットのデシリアライズを実行.
-				TResponse res = Deserialize(req.downloadHandler.data, typeof(TResponse)) as TResponse;
+				TResponse res = Deserialize(req.downloadHandler.data, typeof(TResponse), meta) as TResponse;
 				res.OnAfterDeserialize(responseMeta);
 
 				// リクエストメタデータのセッション情報を更新.
@@ -207,29 +208,29 @@ namespace Mobcast.Coffee.Api
 		/// </summary>
 		/// <param name="data">APIレスポンスデータ</param>
 		/// <returns>ResponsePacketオブジェクト</returns>
-		public static byte[] Serialize(object obj)
+		public static byte[] Serialize(object obj, ApiRequestMeta meta)
 		{
 			Type type = obj.GetType();
 			Profiler.BeginSample("Serialize" + type.Name);
 			
 			// MsgPackの場合はMsgPackパーサー、Jsonの場合はJsonUtilityを使ってシリアライズ.
 			Profiler.BeginSample("Object Parse");
-			byte[] data = requestMeta.packetProtocolCode == PacketProtocolCode.MSG_PACK
+			byte[] data = meta.packetProtocolCode == PacketProtocolCode.MSG_PACK
 				? MessagePackSerializer.Get(type).PackSingleObject(obj)
 				: Encoding.UTF8.GetBytes(JsonUtility.ToJson(obj));
 			Profiler.EndSample();
 
-			Debug.LogFormat("シリアライズデータ({2}) : {0}\n{1}", type, ToReadableText(data, requestMeta.packetProtocolCode == PacketProtocolCode.JSON), requestMeta.packetProtocolCode);
+			Debug.LogFormat("シリアライズデータ({2}) : {0}\n{1}", type, ToReadableText(data, meta.packetProtocolCode == PacketProtocolCode.JSON), meta.packetProtocolCode);
 
 			// 暗号化指定されている場合はAES暗号化.
-			if (requestMeta.packetEncryptCode == PacketEncryptCode.ON)
+			if (meta.packetEncryptCode == PacketEncryptCode.ON)
 			{
 				data = Encrypt(data);
 			}
 
 			//TODO: JSON BASE64変換不要なら外す.
 			// JSON BASE64変換
-			if (requestMeta.packetEncryptCode == PacketEncryptCode.ON && requestMeta.packetProtocolCode == PacketProtocolCode.JSON)
+			if (meta.packetEncryptCode == PacketEncryptCode.ON && meta.packetProtocolCode == PacketProtocolCode.JSON)
 			{
 				Profiler.BeginSample("Convert Base64");
 				data = Encoding.UTF8.GetBytes(Convert.ToBase64String(data));
@@ -247,12 +248,12 @@ namespace Mobcast.Coffee.Api
 		/// </summary>
 		/// <param name="data">APIレスポンスデータ</param>
 		/// <returns>ResponsePacketオブジェクト</returns>
-		public static object Deserialize(byte[] data, System.Type type)
+		public static object Deserialize(byte[] data, System.Type type, ApiRequestMeta meta)
 		{
 			Profiler.BeginSample("Deserialize" + type.Name);
 			//TODO: JSON BASE64変換不要なら外す.
 			// JSON BASE64変換
-			if (requestMeta.packetEncryptCode == PacketEncryptCode.ON && requestMeta.packetProtocolCode == PacketProtocolCode.JSON)
+			if (meta.packetEncryptCode == PacketEncryptCode.ON && meta.packetProtocolCode == PacketProtocolCode.JSON)
 			{
 				Debug.LogFormat("Base64({0}) : {1}", type, Encoding.UTF8.GetString(data));
 
@@ -262,16 +263,16 @@ namespace Mobcast.Coffee.Api
 			}
 
 			// 暗号化指定されている場合はAES復号化.
-			if (requestMeta.packetEncryptCode == PacketEncryptCode.ON)
+			if (meta.packetEncryptCode == PacketEncryptCode.ON)
 			{
 				data = Decrypt(data);
 			}
 
-			Debug.LogFormat("デシリアライズデータ({2}) : {0}\n{1}", type, ToReadableText(data, requestMeta.packetProtocolCode == PacketProtocolCode.JSON), requestMeta.packetProtocolCode);
+			Debug.LogFormat("デシリアライズデータ({2}) : {0}\n{1}", type, ToReadableText(data, meta.packetProtocolCode == PacketProtocolCode.JSON), meta.packetProtocolCode);
 
 			// MsgPackの場合はMsgPackパーサー、Jsonの場合はJsonUtilityを使ってデシリアライズ.
 			Profiler.BeginSample("Object Parse");
-			object obj = requestMeta.packetProtocolCode == PacketProtocolCode.MSG_PACK
+			object obj = meta.packetProtocolCode == PacketProtocolCode.MSG_PACK
 				? MessagePackSerializer.Get(type).UnpackSingleObject(data)
 				: JsonUtility.FromJson(Encoding.UTF8.GetString(data), type);
 			Profiler.EndSample();

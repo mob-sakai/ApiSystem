@@ -15,6 +15,9 @@ namespace Mobcast.Coffee.Api
 
 		/// <summary>レスポンスオブジェクト.</summary>
 		object responseObject { get; }
+
+		/// <summary>リクエストメタデータ.Api毎にオーバーロードが可能です.デフォルトでは、ApiManager.requestMetaを利用します.</summary>
+		ApiRequestMeta meta { get; }
 	}
 
 
@@ -46,6 +49,9 @@ namespace Mobcast.Coffee.Api
 		/// <summary>PostMethodを利用するか.</summary>
 		public virtual bool usePostMethod { get { return false; } }
 
+		/// <summary>リクエストメタデータ.Api毎にオーバーロードが可能です.デフォルトでは、ApiManager.requestMetaを利用します.</summary>
+		public virtual ApiRequestMeta meta { get { return ApiManager.requestMeta; } }
+
 		/// <summary>
 		/// レスポンスキャッシュ.
 		/// 最後に成功したリクエストのレスポンスパケットを保持します.
@@ -55,7 +61,6 @@ namespace Mobcast.Coffee.Api
 		public TResponse response { get; private set; }
 
 		public object responseObject { get { return response; } }
-
 
 		/// <summary>
 		/// リクエストを実行します.
