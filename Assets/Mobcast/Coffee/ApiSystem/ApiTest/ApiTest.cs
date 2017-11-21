@@ -58,6 +58,8 @@ namespace Mobcast.Coffee.Api
 		protected virtual string freeToken { get { return "free-pass-token"; } }
 
 		protected virtual string aesKey { get { return "P0OSdl9MgKG96b4I"; } }
+		
+		protected virtual Type initialRequestApi { get { return typeof(EchoRequestResponsePacket); } }
 
 		protected virtual string aesIv
 		{
@@ -78,9 +80,11 @@ namespace Mobcast.Coffee.Api
 		/// <summary>
 		/// API一覧.
 		/// </summary>
-		readonly Type[] apiRequestTypes = typeof(ApiRequest<,>).Assembly.GetTypes()
+		readonly List<Type> apiRequestTypes = typeof(ApiRequest<,>).Assembly.GetTypes()
 			.Where(x => x.IsClass && x.BaseType != null && x.BaseType.IsGenericType && x.BaseType.GetGenericTypeDefinition() == typeof(ApiRequest<,>))
-			.ToArray();
+			.ToList();
+			
+		event Action onSuccess = () => {};
 
 		protected virtual void Start()
 		{
@@ -144,7 +148,11 @@ namespace Mobcast.Coffee.Api
 			//ApiRequest名の一覧をドロップダウンに追加.
 			dropdownApiList.ClearOptions();
 			dropdownApiList.AddOptions(apiRequestTypes.Select(x => x.Name).ToList());
-			dropdownApiList.onValueChanged.Invoke(0);
+			dropdownApiList.value = Mathf.Max(0, apiRequestTypes.FindIndex(x => x == initialRequestApi));
+			dropdownApiList.onValueChanged.Invoke(dropdownApiList.value);
+			
+			//リクエスト成功コールバックで、リクエストメタデータを保存.
+			onSuccess += ()=> PlayerPrefs.SetString(kPrefsKey, JsonUtility.ToJson(ApiManager.requestMeta));
 		}
 
 		public void OnValueChanged_Dropdown(int index)
@@ -167,9 +175,6 @@ namespace Mobcast.Coffee.Api
 			operation.onNetworkEnd += (web, req) =>
 			{
 				ApiRequestMeta rm = ApiManager.requestMeta;
-
-				// * UID/PIDの自動保存
-				PlayerPrefs.SetString(kPrefsKey, JsonUtility.ToJson(ApiManager.requestMeta));
 
 				//レスポンスヘッダ
 				var header = web.GetResponseHeaders();
@@ -211,6 +216,7 @@ namespace Mobcast.Coffee.Api
 				}
 				#endif
 			};
+			operation.onSuccess += onSuccess;
 		}
 
 
@@ -248,6 +254,7 @@ namespace Mobcast.Coffee.Api
 			d.ClearOptions();
 			d.AddOptions(keys);
 			d.value = values.FindIndex(x => x.Equals(getter()));
+			onSuccess += () => d.value = values.FindIndex(x => x.Equals(getter()));
 			d.onValueChanged.AddListener(i => setter(values[i]));
 		}
 
@@ -270,6 +277,7 @@ namespace Mobcast.Coffee.Api
 			InputField input = go.GetComponentInChildren<InputField>();
 			input.text = getter();
 			input.onValueChanged.AddListener(setter);
+			onSuccess += () => input.text = getter();
 
 			//ボタンを有効化.
 			bool activeButton = !string.IsNullOrEmpty(buttonName);
@@ -301,6 +309,7 @@ namespace Mobcast.Coffee.Api
 			//トグルにsetterとgetterを紐づける
 			Toggle toggle = go.GetComponentInChildren<Toggle>();
 			toggle.isOn = getter();
+			onSuccess += () => toggle.isOn = getter();
 			toggle.onValueChanged.AddListener(setter);
 		}
 

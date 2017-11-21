@@ -33,6 +33,7 @@ namespace Mobcast.Coffee.Api
 		int m_NetworkTimeout;
 
 		public event System.Action<UnityWebRequest, IRequestPacket> onNetworkEnd;
+		public System.Action onSuccess;
 
 		public override bool keepWaiting { get { return m_webRequest != null || 0 < m_TriableCount; } }
 

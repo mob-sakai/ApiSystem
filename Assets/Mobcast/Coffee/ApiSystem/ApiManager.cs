@@ -195,6 +195,11 @@ namespace Mobcast.Coffee.Api
 				{
 					onSuccessCallback(res);
 				}
+
+				if(op.onSuccess != null)
+				{
+					op.onSuccess();
+				}
 			};
 
 			// オペレーションをキューに追加.
