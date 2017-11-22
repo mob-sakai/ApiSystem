@@ -81,6 +81,7 @@ namespace Mobcast.Coffee.Api
 		/// <summary>
 		/// 暗号化キーと初期ベクトルを設定します.
 		/// IVの変更が必要な場合、このメソッドを利用してください.
+		/// サーバー側とkey,ivを一致させる必要があります.
 		/// </summary>
 		public static void SetCryptoInfo(string key, string iv)
 		{
@@ -100,6 +101,19 @@ namespace Mobcast.Coffee.Api
 
 			s_Encryptor = s_Aes.CreateEncryptor();
 			s_Decryptor = s_Aes.CreateDecryptor();
+		}
+
+		public static string GetIvFromUid(string uid)
+		{
+			uid = uid.PadRight(8, '0');
+			int length = uid.Length;
+			int half = length - (length / 2);
+			return new StringBuilder(16)
+				.Append(uid, half - 4, 4)
+				.Append(uid, 0, 4)
+				.Append(uid, length - 4, 4)
+				.Append(uid, half - 2, 4)
+				.ToString();
 		}
 
 		/// <summary>

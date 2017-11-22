@@ -61,22 +61,6 @@ namespace Mobcast.Coffee.Api
 		
 		protected virtual Type initialRequestApi { get { return typeof(EchoRequestResponsePacket); } }
 
-		protected virtual string aesIv
-		{
-			get
-			{
-				string uid = ApiManager.requestMeta.uid.PadRight(8, '0');
-				int length = uid.Length;
-				int half = length - (length / 2);
-				return new StringBuilder(16)
-					.Append(uid, half - 4, 4)
-					.Append(uid, 0, 4)
-					.Append(uid, length - 4, 4)
-					.Append(uid, half - 2, 4)
-					.ToString();
-			}
-		}
-
 		/// <summary>
 		/// API一覧.
 		/// </summary>
@@ -91,7 +75,7 @@ namespace Mobcast.Coffee.Api
 			//APIメタデータ初期化.
 			ApiRequestMeta rm = JsonUtility.FromJson(PlayerPrefs.GetString(kPrefsKey, "{}"), requestMetaType) as ApiRequestMeta;
 			ApiManager.Initialize(rm);
-			ApiManager.SetCryptoInfo(aesKey, aesIv);
+			ApiManager.SetCryptoInfo(aesKey, ApiManager.GetIvFromUid(rm.uid));
 
 			//リクエストヘッダーアイテムを追加.
 			headerItem_Enum.SetActive(false); 
@@ -114,14 +98,14 @@ namespace Mobcast.Coffee.Api
 				v =>
 				{
 					rm.uid = v;
-					ApiManager.SetCryptoInfo(aesKey, aesIv);
+					ApiManager.SetCryptoInfo(aesKey, ApiManager.GetIvFromUid(rm.uid));
 				},
 				"Reset",
 				() =>
 				{
 					rm.uid = Guid.NewGuid().ToString();
 					rm.playerId = "-1";
-					ApiManager.SetCryptoInfo(aesKey, aesIv);
+					ApiManager.SetCryptoInfo(aesKey, ApiManager.GetIvFromUid(rm.uid));
 				}
 			);
 			RegisterString(ApiConstants.HEADER_KEY_TOKEN, () => rm.token, v => rm.token = v, "Free", () => rm.token = freeToken);
