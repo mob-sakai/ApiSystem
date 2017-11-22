@@ -78,6 +78,13 @@ See [How to build](https://github.com/msgpack/msgpack-cli#how-to-build)
 
 ## Release Notes
 
+### ver.1.0.0-rc T.B.D.
+
+* Update: MsgPack-Cli assembly version : 1.0.0-rc T.B.D. [defef75]
+* Feature: Overridable request meta for each ApiRequest
+* Feature: OnSuccess callback for ApiOperation
+* Changed: Add default GetIvFromUid method
+
 ### ver.1.0.0-rc
 
 * Update: MsgPack-Cli assembly version : 1.0.0-rc [9d51fe3]
@@ -93,3 +100,11 @@ See [How to build](https://github.com/msgpack/msgpack-cli#how-to-build)
 * Feature: Generate Serializer
 * Feature: MsgPack Viewer
 * Feature: Update MsgPack-Cli assembly using shell script
+
+
+
+
+## See Also
+
+* GitHub Page : https://github.com/mob-sakai/ApiSystem
+* Issue tracker : https://github.com/mob-sakai/ApiSystem/issues
