@@ -182,4 +182,7 @@ namespace Mobcast.Coffee.Api
 			return dic.Aggregate(new StringBuilder(), (a, b) => a.AppendFormat("[{0}:{1}], ", b.Key, b.Value), a => a.ToString());
 		}
 	}
+
+
+	
 }
