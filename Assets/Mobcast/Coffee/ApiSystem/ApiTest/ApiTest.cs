@@ -61,12 +61,12 @@ namespace Mobcast.Coffee.Api
 		
 		protected virtual Type initialRequestApi { get { return typeof(EchoRequestResponsePacket); } }
 
+		protected virtual Type requestBaseType { get { return typeof(ApiRequest<,>); } }
+
 		/// <summary>
 		/// API一覧.
 		/// </summary>
-		readonly List<Type> apiRequestTypes = typeof(ApiRequest<,>).Assembly.GetTypes()
-			.Where(x => x.IsClass && x.BaseType != null && x.BaseType.IsGenericType && x.BaseType.GetGenericTypeDefinition() == typeof(ApiRequest<,>))
-			.ToList();
+		List<Type> apiRequestTypes;
 			
 		event Action onSuccess = () => {};
 
@@ -130,6 +130,9 @@ namespace Mobcast.Coffee.Api
 				});
 
 			//ApiRequest名の一覧をドロップダウンに追加.
+			apiRequestTypes = this.GetType().Assembly.GetTypes()
+				.Where(x => x.IsClass && x.BaseType != null && x.BaseType.IsGenericType && x.BaseType.GetGenericTypeDefinition() == requestBaseType)
+				.ToList();
 			dropdownApiList.ClearOptions();
 			dropdownApiList.AddOptions(apiRequestTypes.Select(x => x.Name).ToList());
 			dropdownApiList.value = Mathf.Max(0, apiRequestTypes.FindIndex(x => x == initialRequestApi));

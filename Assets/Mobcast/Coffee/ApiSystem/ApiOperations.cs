@@ -172,6 +172,7 @@ namespace Mobcast.Coffee.Api
 			}
 			m_webRequest = null;
 			onNetworkEnd = null;
+			m_TriableCount = 0;
 		}
 
 		static string Dump(Dictionary<string,string> dic)

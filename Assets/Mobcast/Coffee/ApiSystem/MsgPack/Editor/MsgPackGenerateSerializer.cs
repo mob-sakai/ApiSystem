@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Text;
 using MsgPack.Serialization;
 using UnityEditor;
+using System.Collections.Generic;
 
 namespace MsgPack.Editor
 {
@@ -96,13 +97,19 @@ namespace MsgPack.Editor
 		{
 			return Assembly.LoadFrom("Library/ScriptAssemblies/Assembly-CSharp.dll").GetTypes()
 			.Where(type =>
-				type.IsPublic
-				&& !type.IsAbstract
+				!type.IsAbstract
 				&& !type.IsInterface
 				&& type.GetMembers(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance)
 					.Any(m => m.GetCustomAttributes(typeof(MessagePackMemberAttribute), true).Length != 0)
 			)
 			.ToArray();
+		}
+
+		public static IEnumerable<Type> CollectSerializableMemberTypes(Type type)
+		{
+			return type.GetMembers()
+				.Where(m => m.GetCustomAttributes(typeof(MessagePackMemberAttribute), true).Length != 0)
+				.Select(m => m.GetType());
 		}
 	}
 }
